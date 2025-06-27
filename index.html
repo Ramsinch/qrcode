@@ -3,191 +3,775 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Code Generator (Guided Paste)</title>
+    <title>Qrite.ir - مولد پیشرفته QR Code</title>
     <link href="https://cdn.fontcdn.ir/Font/Persian/Vazir/Vazir.css" rel="stylesheet" type="text/css" />
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4A90E2">
+
+    <script type="text/javascript" src="qr-code-styling.js"></script>
+    <script src="jsQR.min.js"></script>
+    
     <style>
+        :root {
+            --primary-color: #4A90E2;
+            --primary-hover: #357ABD;
+            --background-color: #F4F7FC;
+            --panel-bg: #FFFFFF;
+            --text-primary: #333D47;
+            --text-secondary: #7A8C99;
+            --border-color: #E6EAF0;
+            --danger-color: #D0021B;
+            --success-color: #4CAF50;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+            --border-radius: 12px;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
             font-family: 'Vazir', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-primary);
             display: flex;
-            flex-direction: column; 
-            justify-content: center;
-            align-items: center;
             min-height: 100vh;
-            background-color: #f0f2f5;
-            margin: 0;
         }
-        .container {
-            background-color: #ffffff;
-            margin-top:10%;
-            padding: 30px 40px;
-            border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
-            text-align: center;
-            width: 90%;
-            max-width: 450px;
+
+        .app-wrapper {
+            display: flex;
+            width: 100%;
         }
-        h1 {
-            color: #333;
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 80px;
+            background-color: var(--panel-bg);
+            border-left: 1px solid var(--border-color);
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: width 0.3s ease;
+            z-index: 100;
+        }
+        .sidebar-logo {
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--primary-color);
+            margin-bottom: 40px;
+        }
+        .nav-list {
+            list-style: none;
+            width: 100%;
+        }
+        .nav-item button {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px 0;
+            border: none;
+            background-color: transparent;
+            cursor: pointer;
+            position: relative;
+            transition: background-color 0.2s ease;
+        }
+        .nav-item button svg {
+            width: 26px;
+            height: 26px;
+            fill: var(--text-secondary);
+            transition: fill 0.2s ease;
+        }
+        .nav-item button.active svg {
+            fill: var(--primary-color);
+        }
+        .nav-item button.active::before {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 60%;
+            background-color: var(--primary-color);
+            border-radius: 4px 0 0 4px;
+        }
+        .nav-item button:hover svg {
+            fill: var(--primary-hover);
+        }
+
+        /* --- Main Content --- */
+        .main-content {
+            flex-grow: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+        .view-content { display: none; }
+        .view-content.active { display: block; }
+        
+        .page-header h1 {
+            font-size: 28px;
             margin-bottom: 20px;
+            text-align: right;
+        }
+        .content-grid {
+            display: grid;
+            gap: 30px;
+        }
+
+        .card {
+            background-color: var(--panel-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 30px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .card-header {
+            margin-bottom: 25px;
+            font-size: 18px;
             font-weight: 600;
         }
-        .textarea-container {
-            position: relative;
-            margin-bottom: 10px;
+
+        /* Generator Styles */
+        #generator-grid {
+             grid-template-columns: minmax(280px, 1fr) minmax(350px, 1.5fr) minmax(300px, 1fr);
         }
         textarea {
-            font-family: 'Vazir';
-            width: 100%;
-            padding: 12px;
-            padding-left: 45px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            font-size: 16px;
-            resize: vertical;
-            min-height: 100px;
-            box-sizing: border-box;
-            transition: border-color 0.3s, box-shadow 0.3s;
+            width: 100%; padding: 15px; font-size: 16px; font-family: 'Vazir';
+            border-radius: 8px; border: 1px solid var(--border-color);
+            resize: vertical; min-height: 140px;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
         textarea:focus {
-            border-color: #007bff;
-            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
-            outline: none;
+            outline: none; border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
         }
-        .paste-btn {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            width: 30px;
-            height: 30px;
-            background-color: #f0f2f5;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s, visibility 0.3s, background-color 0.3s;
-            z-index: 10;
+        .form-section { margin-top: 30px; }
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .option-item label { display: block; font-size: 14px; margin-bottom: 8px; color: var(--text-secondary); }
+        .option-item select {
+            width: 100%; padding: 10px; font-size: 14px; font-family: 'Vazir';
+            border-radius: 8px; border: 1px solid var(--border-color);
+            background-color: #fff;
         }
-        .textarea-container:hover .paste-btn {
-            opacity: 1;
-            visibility: visible;
+        .logo-uploader {
+            padding: 15px; border: 2px dashed var(--border-color); border-radius: 8px;
+            text-align: center; cursor: pointer; transition: border-color 0.2s;
         }
-        .paste-btn:hover {
-            background-color: #e2e6ea;
+        .logo-uploader:hover { border-color: var(--primary-color); }
+        .logo-uploader span { color: var(--text-secondary); }
+        #logo-input { display: none; }
+        .logo-preview-container {
+            display: none; align-items: center; gap: 15px;
+            padding: 10px; background-color: #F9FAFB; border-radius: 8px;
         }
-        .paste-btn svg {
-            width: 16px;
-            height: 16px;
-            fill: #555;
+        .logo-preview-container img { width: 50px; height: 50px; object-fit: contain; }
+        .logo-preview-container span { flex-grow: 1; text-align: right; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+        #remove-logo-btn {
+            background: none; border: none; cursor: pointer;
+            width: 24px; height: 24px; padding: 4px;
         }
-        button#generate-btn {
-            display: none;
-        }
-        #qrcode {
-            margin-top: 15px;
-            padding: 15px;
-            border: 1px solid #eee;
-            border-radius: 8px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 256px;
-            transition: opacity 0.4s;
-        }
-        .status-indicator {
-            height: 20px;
-            margin-bottom: 15px;
-            color: #007bff;
-            font-weight: 500;
-            font-size: 14px;
-        }
-        .placeholder-text, .error-text { font-size: 14px; }
-        .placeholder-text { color: #aaa; }
-        .error-text { color: #d93025; font-weight: 500; }
+        #remove-logo-btn svg { fill: var(--text-secondary); transition: fill 0.2s; }
+        #remove-logo-btn:hover svg { fill: var(--danger-color); }
 
-        /* ✅ استایل فوتر */
-        footer {
-            margin-top: auto;
-            padding: 15px;
-            text-align: center;
-            font-size: 13px;
-            color: #666;
+        .toggle-switch { display: flex; align-items: center; justify-content: space-between; padding: 15px 0; border-top: 1px solid var(--border-color); margin-top: 20px;}
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary-color); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        /* Viewer Styles */
+        .viewer-card { text-align: center; }
+        #qrcode-wrapper { position: relative; display: inline-block; }
+        #qrcode-container {
+            background: white; padding: 15px; border-radius: var(--border-radius);
+            border: 1px solid var(--border-color); display: flex;
+            align-items: center; justify-content: center;
+        }
+        #qrcode-signature {
+            display: none; font-size: 14px; font-weight: 600;
+            color: var(--text-secondary); margin-top: 10px;
+        }
+        .button-group { display: flex; flex-wrap:wrap; gap: 10px; margin-top: 25px; }
+        .btn {
+            flex-grow: 1; padding: 12px 15px; font-size: 15px; font-family: 'Vazir';
+            border: none; border-radius: 8px; cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-primary { background-color: var(--primary-color); color: white; }
+        .btn-primary:hover:not(:disabled) { background-color: var(--primary-hover); }
+        .btn-secondary { background-color: #E6EAF0; color: var(--text-primary); }
+        .btn-secondary:hover:not(:disabled) { background-color: #D9DEE6; }
+        .btn:disabled { background-color: #f0f0f0; color: #aaa; cursor: not-allowed; transform: none !important; }
+
+        /* History & Reader Styles */
+        .full-width-card { grid-column: 1 / -1; }
+        #history-list { list-style: none; padding: 0; margin: 0; max-height: 500px; overflow-y: auto; }
+        .history-item { display: flex; align-items: center; padding: 10px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: background-color 0.2s; }
+        .history-item:hover { background-color: #f8f9fa; }
+        .history-item .preview { width: 40px; height: 40px; border-radius: 4px; margin-left: 10px; flex-shrink: 0; }
+        .history-item .info { flex-grow: 1; overflow: hidden; }
+        .history-item .info span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 14px; }
+        .history-item .delete-btn { background: none; border: none; cursor: pointer; padding: 5px; flex-shrink: 0; }
+        .history-item .delete-btn svg { width:18px; height:18px; fill: #999; }
+        .history-item .delete-btn:hover svg { fill: var(--danger-color); }
+        .placeholder-text { font-size: 14px; color: var(--text-secondary); }
+        
+        #reader-results { width: 100%; padding: 20px; border: 1px dashed var(--border-color); border-radius: 8px; min-height: 100px; word-wrap: break-word; }
+        #decoded-data { font-size: 16px; background-color: #F9FAFB; padding: 10px; border-radius: 6px; white-space: pre-wrap; user-select: text; margin-top: 15px; }
+
+        /* Toast Notification */
+        .toast-container { position: fixed; bottom: 20px; left: 20px; z-index: 1000; }
+        .toast {
+            background-color: rgba(20, 20, 20, 0.9); color: white;
+            padding: 12px 20px; border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            animation: toast-in 0.5s ease, toast-out 0.5s ease 2.5s forwards;
+        }
+        @keyframes toast-in { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes toast-out { from { transform: translateY(0); opacity: 1; } to { transform: translateY(100px); opacity: 0; } }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            #generator-grid { grid-template-columns: minmax(320px, 1.5fr) minmax(300px, 1fr); }
+            .history-panel { grid-row: 2; grid-column: 1 / -1; }
+        }
+        @media (max-width: 768px) {
+            .app-wrapper { flex-direction: column-reverse; }
+            .sidebar { width: 100%; height: 60px; flex-direction: row; justify-content: space-around; border-top: 1px solid var(--border-color); border-left: none; }
+            .sidebar-logo { display: none; }
+            .nav-item button.active::before { width: 60%; height: 3px; top: 0; right: 50%; transform: translateX(50%); border-radius: 0 0 3px 3px; }
+            .main-content { padding: 20px; }
+            #generator-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
+    <div class="app-wrapper">
+        <aside class="sidebar">
+            <div class="sidebar-logo">Qrite.ir</div>
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <button class="nav-button active" data-view="generator-view" title="تولید کننده">
+                        <svg viewBox="0 0 24 24"><path d="M4,4H10V10H4V4M20,4V10H14V4H20M14,15H20V20H14V15M4,20V14H10V20H4M6,6V8H8V6H6M16,6V8H18V6H16M16,17V19H18V17H16M6,16V18H8V16H6M11,6H13V13H11V6M11,15H13V20H11V15Z"/></svg>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-button" data-view="reader-view" title="خواننده">
+                        <svg viewBox="0 0 24 24"><path d="M16.5,14H17.5V17H16.5V14M16.5,10H17.5V13H16.5V10M14.5,14H15.5V17H14.5V14M14.5,10H15.5V13H14.5V10M13.5,17H10.5V15.5H13.5V17M13.5,12.5H10.5V11H13.5V12.5M3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3H5A2,2 0 0,0 3,5M5,5H19V19H5V5Z"/></svg>
+                    </button>
+                </li>
+            </ul>
+        </aside>
 
-    <div class="container">
-        <h1>مبدل خودکار متن به QR</h1>
-        <div class="textarea-container">
-            <textarea id="text-input" rows="4" placeholder="اینجا تایپ کنید یا برای جایگذاری هاور کنید..."></textarea>
-            <button id="paste-btn" class="paste-btn" title="راهنمای جایگذاری از کلیپ‌بورد">
-                <svg viewBox="0 0 24 24"><path d="M19,20H5V4H7V2H17V4H19M12,2A2,2 0 0,1 14,4H10A2,2 0 0,1 12,2M7,6V18H17V6H7Z"></path></svg>
-            </button>
-        </div>
-        <div id="status" class="status-indicator"></div>
-        <button id="generate-btn">تولید دستی QR Code</button>
-        <div id="qrcode">
-            <p class="placeholder-text">QR Code شما در اینجا نمایش داده می‌شود</p>
-        </div>
+        <main class="main-content">
+            <div id="generator-view" class="view-content active">
+                <header class="page-header"><h1>تولید کننده QR Code</h1></header>
+                <div id="generator-grid" class="content-grid">
+                    <div class="card history-panel">
+                        <div class="card-header">تاریخچه</div>
+                        <div id="history-list-container">
+                             <ul id="history-list"><p class="placeholder-text" id="history-placeholder">تاریخچه‌ای یافت نشد.</p></ul>
+                        </div>
+                    </div>
+                    <div class="card" id="editor-card">
+                        <div class="card-header">محتوا و تنظیمات</div>
+                        <div class="input-group">
+                            <textarea id="text-input" rows="5" placeholder="متن یا لینک خود را اینجا وارد کنید..."></textarea>
+                        </div>
+                        <div class="form-section">
+                            <div class="options-grid">
+                                <div class="option-item"><label for="dot-style">استایل نقطه‌ها</label><select id="dot-style"><option value="square">مربعی</option><option value="dots">نقطه‌ای</option><option value="rounded">گرد</option></select></div>
+                                <div class="option-item"><label for="correction-level">سطح تصحیح خطا</label><select id="correction-level"><option value="L">پایین</option><option value="M">متوسط</option><option value="Q">بالا</option><option value="H">بسیار بالا</option></select></div>
+                            </div>
+                        </div>
+                         <div class="form-section">
+                            <label class="option-item" for="logo-uploader">لوگو</label>
+                            <label for="logo-input" id="logo-uploader" class="logo-uploader"><span>برای آپلود لوگو کلیک کنید</span></label>
+                            <input type="file" id="logo-input" accept="image/*">
+                            <div class="logo-preview-container" id="logo-preview">
+                                <img id="logo-preview-image" src="" alt="پیش‌نمایش لوگو">
+                                <span id="logo-preview-name"></span>
+                                <button id="remove-logo-btn" title="حذف لوگو"><svg viewBox="0 0 24 24"><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" /></svg></button>
+                            </div>
+                        </div>
+                        <div class="toggle-switch">
+                            <label for="signature-switch">افزودن امضای سایت</label>
+                            <label class="switch">
+                                <input type="checkbox" id="signature-switch">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="card viewer-card" id="viewer-card">
+                         <div class="card-header">پیش‌نمایش</div>
+                         <div id="qrcode-wrapper">
+                             <div id="qrcode-container"><p class="placeholder-text" style="text-align:center;">کد شما اینجا نمایش داده می‌شود</p></div>
+                             <div id="qrcode-signature">qrite.ir</div>
+                         </div>
+                         <div class="button-group">
+                            <button id="download-png-btn" class="btn btn-primary" disabled>دانلود PNG</button>
+                            <button id="download-svg-btn" class="btn btn-secondary" disabled>دانلود SVG</button>
+                            <button id="share-btn" class="btn btn-secondary">اشتراک گذاری</button>
+                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="reader-view" class="view-content">
+                <header class="page-header"><h1>خواندن</h1></header>
+                <div class="card full-width-card">
+                    <div class="button-group" style="justify-content:center; margin-top:0; margin-bottom:20px;">
+                        <label for="file-input-reader" class="btn btn-primary">آپلود تصویر</label>
+                        <input type="file" id="file-input-reader" accept="image/*" style="display:none;">
+                        <button id="camera-btn" class="btn btn-secondary">استفاده از وب‌کم</button>
+                    </div>
+                    <div id="video-container" style="display:none; border-radius: var(--border-radius); overflow:hidden;"><video id="video-feed" playsinline></video></div>
+                    <div id="reader-results" style="margin-top:20px;"><h3>نتیجه اسکن:</h3><div id="decoded-data"><p class="placeholder-text">منتظر اسکن یا آپلود تصویر...</p></div></div>
+                </div>
+            </div>
+			<footer>طراحی و توسعه توسط <a href="https://www.linkedin.com/in/ramsinchaabian/">رامسین چعبیان</a></footer>
+        </main>
     </div>
-    <footer>طراحی و توسعه توسط <a href="https://www.linkedin.com/in/ramsinchaabian/">رامسین چعبیان</a></footer>
+    <div id="toast-container" class="toast-container"></div>
 
-    <script src="qrcode.min.js"></script>
     <script>
-        const textInput = document.getElementById('text-input');
-        const qrcodeContainer = document.getElementById('qrcode');
-        const statusIndicator = document.getElementById('status');
-        const pasteBtn = document.getElementById('paste-btn');
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- Global App State & Elements ---
+        const navButtons = document.querySelectorAll('.nav-button');
+        const views = document.querySelectorAll('.view-content');
+        const toastContainer = document.getElementById('toast-container');
+        let currentView = 'generator-view';
+        
+        const showToast = (message) => {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            toastContainer.appendChild(toast);
+            setTimeout(() => { toast.remove(); }, 3000);
+        };
 
-        let debounceTimeout = null;
+        // --- Navigation Logic ---
+        navButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const targetView = button.dataset.view;
+                if (targetView === currentView) return;
+                if (currentView === 'reader-view') window.stopCamera?.();
+                navButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                views.forEach(view => view.classList.remove('active'));
+                document.getElementById(targetView).classList.add('active');
+                currentView = targetView;
+            });
+        });
+        
+        // ===========================================
+        // ===== QR CODE GENERATOR ===================
+        // ===========================================
+        (function() {
+            const textInput = document.getElementById('text-input');
+            const qrcodeContainer = document.getElementById('qrcode-container');
+            const downloadPngBtn = document.getElementById('download-png-btn');
+            const downloadSvgBtn = document.getElementById('download-svg-btn');
+            const shareBtn = document.getElementById('share-btn');
+            const historyList = document.getElementById('history-list');
+            const dotStyleSelect = document.getElementById('dot-style');
+            const correctionLevelSelect = document.getElementById('correction-level');
+            const logoInput = document.getElementById('logo-input');
+            const logoUploader = document.getElementById('logo-uploader');
+            const logoPreview = document.getElementById('logo-preview');
+            const logoPreviewImage = document.getElementById('logo-preview-image');
+            const logoPreviewName = document.getElementById('logo-preview-name');
+            const removeLogoBtn = document.getElementById('remove-logo-btn');
+            const signatureSwitch = document.getElementById('signature-switch');
+            const signatureDiv = document.getElementById('qrcode-signature');
+            
+            let qrCodeUpdateDebounce = null;
+            let historySaveDebounce = null;
+            let logoImageBase64 = null;
+            let qrCode = null;
 
-        function generateQR() {
-            qrcodeContainer.innerHTML = '';
-            qrcodeContainer.style.opacity = '0';
-            const text = textInput.value.trim();
-            if (text === "") {
-                qrcodeContainer.innerHTML = '<p class="placeholder-text">QR Code شما در اینجا نمایش داده می‌شود</p>';
-                statusIndicator.textContent = '';
-                qrcodeContainer.style.opacity = '1';
-                return;
-            }
-            try {
-                new QRCode(qrcodeContainer, {
-                    text: text,
-                    width: 256,
-                    height: 256,
-                    colorDark: "#000000",
-                    colorLight: "#ffffff",
-                    correctLevel: QRCode.CorrectLevel.L
+            const getQrOptions = () => ({
+                width: 250, height: 250, type: 'canvas', data: textInput.value.trim(),
+                margin: 0, image: logoImageBase64,
+                qrOptions: { errorCorrectionLevel: correctionLevelSelect.value },
+                dotsOptions: { color: '#000000', type: dotStyleSelect.value },
+                backgroundOptions: { color: '#ffffff' },
+                imageOptions: { crossOrigin: 'anonymous', margin: 4, imageSize: 0.3 }
+            });
+
+            const debouncedSaveToHistory = () => {
+                clearTimeout(historySaveDebounce);
+                historySaveDebounce = setTimeout(() => {
+                    const options = getQrOptions();
+                    if (options.data) {
+                        saveToHistory(options);
+                        showToast("تغییرات در تاریخچه ذخیره شد.");
+                    }
+                }, 3000);
+            };
+
+            const generateOrUpdateQRCode = (options) => {
+                if (!options) options = getQrOptions();
+                
+                if (!options.data) {
+                    qrcodeContainer.innerHTML = `<p class="placeholder-text" style="text-align:center; margin:auto;">کد شما اینجا نمایش داده می‌شود</p>`;
+                    [downloadPngBtn, downloadSvgBtn, shareBtn].forEach(b => b.disabled = true);
+                    qrCode = null;
+                    return;
+                }
+                
+                if (!options.image) delete options.image;
+                qrcodeContainer.innerHTML = '';
+                try {
+                    qrCode = new QRCodeStyling(options);
+                    qrCode.append(qrcodeContainer);
+                    [downloadPngBtn, downloadSvgBtn, shareBtn].forEach(b => b.disabled = false);
+                    updateSignatureVisibility();
+                } catch(error) {
+                    qrcodeContainer.innerHTML = `<p class="placeholder-text" style="color:var(--danger-color);text-align:center;margin:auto;">خطا: متن بیش از حد طولانی است.</p>`;
+                    [downloadPngBtn, downloadSvgBtn, shareBtn].forEach(b => b.disabled = true);
+                    qrCode = null;
+                }
+            };
+            
+            const handleStateChange = () => {
+                clearTimeout(qrCodeUpdateDebounce);
+                qrCodeUpdateDebounce = setTimeout(() => generateOrUpdateQRCode(), 300);
+                debouncedSaveToHistory();
+            };
+
+            const updateSignatureVisibility = () => {
+                signatureDiv.style.display = signatureSwitch.checked && qrCode ? 'block' : 'none';
+            };
+
+            const updateLogoUI = (file) => {
+                if (file && logoImageBase64) {
+                    logoUploader.style.display = 'none';
+                    logoPreview.style.display = 'flex';
+                    logoPreviewImage.src = logoImageBase64;
+                    logoPreviewName.textContent = file.name;
+                } else {
+                    logoUploader.style.display = 'block';
+                    logoPreview.style.display = 'none';
+                    logoInput.value = '';
+                    logoImageBase64 = null;
+                }
+            };
+
+            const handleLogoUpload = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        logoImageBase64 = event.target.result;
+                        updateLogoUI(file);
+                        handleStateChange();
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+            
+            const handleDownload = async (extension) => {
+                if (!qrCode) return;
+
+                try {
+                    if (!signatureSwitch.checked) {
+                        qrCode.download({ name: 'qrite', extension: extension });
+                        return;
+                    }
+
+                    const rawData = await qrCode.getRawData('png');
+                    if (!rawData) {
+                        showToast("خطا در دریافت داده‌های QR Code.");
+                        return;
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const qrImage = new Image();
+
+                    await new Promise((resolve, reject) => {
+                        qrImage.onload = () => {
+                            const qrSize = 250;
+                            const padding = 20;
+                            const fontSize = 18;
+                            const textHeight = 40;
+
+                            canvas.width = qrSize + padding * 2;
+                            canvas.height = qrSize + padding * 2 + textHeight;
+
+                            ctx.fillStyle = '#ffffff';
+                            ctx.fillRect(0, 0, canvas.width, canvas.height);
+                            ctx.drawImage(qrImage, padding, padding, qrSize, qrSize);
+                            ctx.fillStyle = '#7A8C99';
+                            ctx.font = `600 ${fontSize}px Vazir`;
+                            ctx.textAlign = 'center';
+                            ctx.fillText('qrite.ir', canvas.width / 2, qrSize + padding + textHeight / 1.5);
+                            
+                            URL.revokeObjectURL(qrImage.src);
+                            resolve();
+                        };
+                        qrImage.onerror = reject;
+
+                        qrImage.src = URL.createObjectURL(rawData);
+                    });
+
+                    const link = document.createElement('a');
+                    link.download = `qrite-signed.${extension}`;
+                    
+                    if (extension === 'svg') {
+                        const svgContent = `
+                            <svg width="${canvas.width}" height="${canvas.height}" xmlns="http://www.w3.org/2000/svg">
+                                <image href="${canvas.toDataURL('image/png')}" width="${canvas.width}" height="${canvas.height}"/>
+                            </svg>`;
+                        link.href = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgContent);
+                    } else {
+                        link.href = canvas.toDataURL('image/png');
+                    }
+                    link.click();
+
+                } catch (err) {
+                    console.error("Download failed:", err);
+                    showToast("خطا در آماده‌سازی دانلود.");
+                }
+            };
+
+            const getHistory = () => JSON.parse(localStorage.getItem('qrHistory_v2') || '[]');
+            const saveHistory = (history) => localStorage.setItem('qrHistory_v2', JSON.stringify(history));
+            
+            const saveToHistory = (options) => {
+                let history = getHistory();
+                const cleanOptions = {...options, image: options.image ? "has_logo" : null };
+                const existingIndex = history.findIndex(item => item.data === cleanOptions.data);
+                if (existingIndex > -1) history.splice(existingIndex, 1);
+                history.unshift(cleanOptions);
+                if (history.length > 15) history = history.slice(0, 15);
+                saveHistory(history);
+                renderHistory();
+            };
+
+            const renderHistory = () => {
+                const history = getHistory();
+                historyList.innerHTML = '';
+                if (history.length === 0) {
+                    historyList.innerHTML = '<p class="placeholder-text" style="padding:10px;text-align:center;">تاریخچه‌ای یافت نشد.</p>';
+                } else {
+                    history.forEach((item, index) => {
+                        const li = document.createElement('li');
+                        li.className = 'history-item';
+                        li.setAttribute('data-index', index);
+                        li.innerHTML = `<div class="preview"></div><div class="info"><span>${item.data}</span></div><button class="delete-btn" title="حذف از تاریخچه"><svg viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" /></svg></button>`;
+                        historyList.appendChild(li);
+                        const previewEl = li.querySelector('.preview');
+                        const previewOptions = {...item, width: 40, height: 40, margin: 0, image: null};
+                        new QRCodeStyling(previewOptions).append(previewEl);
+                    });
+                }
+            };
+            
+            historyList.addEventListener('click', (e) => {
+                const itemLi = e.target.closest('.history-item');
+                if (!itemLi) return;
+                const index = itemLi.getAttribute('data-index');
+                if (e.target.closest('.delete-btn')) {
+                    e.stopPropagation();
+                    let history = getHistory();
+                    history.splice(index, 1);
+                    saveHistory(history);
+                    renderHistory();
+                    showToast("از تاریخچه حذف شد.");
+                } else {
+                    const item = getHistory()[index];
+                    showToast("بازیابی از تاریخچه...");
+                    logoImageBase64 = null;
+                    updateLogoUI(null);
+                    
+                    textInput.value = item.data;
+                    dotStyleSelect.value = item.dotsOptions.type;
+                    correctionLevelSelect.value = item.qrOptions.errorCorrectionLevel;
+                    
+                    generateOrUpdateQRCode(item);
+                }
+            });
+
+            textInput.addEventListener('input', handleStateChange);
+            [dotStyleSelect, correctionLevelSelect, signatureSwitch].forEach(el => el.addEventListener('change', handleStateChange));
+            logoInput.addEventListener('change', handleLogoUpload);
+            removeLogoBtn.addEventListener('click', () => {
+                logoImageBase64 = null;
+                updateLogoUI(null);
+                generateOrUpdateQRCode(); // Use direct call for instant feedback
+                debouncedSaveToHistory();
+                showToast("لوگو حذف شد.");
+            });
+            
+            downloadPngBtn.addEventListener('click', () => handleDownload('png'));
+            downloadSvgBtn.addEventListener('click', () => handleDownload('svg'));
+            
+            if (!navigator.share) {
+                shareBtn.style.display = 'none';
+            } else {
+                shareBtn.addEventListener('click', async () => {
+                    if (!qrCode) return;
+                    try {
+                        let finalBlob;
+
+                        if (signatureSwitch.checked) {
+                            const rawData = await qrCode.getRawData('png');
+                            if (!rawData) return;
+                            
+                            finalBlob = await new Promise((resolve, reject) => {
+                                const canvas = document.createElement('canvas');
+                                const ctx = canvas.getContext('2d');
+                                const qrImage = new Image();
+                                qrImage.onload = () => {
+                                    const qrSize = 250, padding = 20, fontSize = 18, textHeight = 40;
+                                    canvas.width = qrSize + padding * 2; canvas.height = qrSize + padding * 2 + textHeight;
+                                    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                                    ctx.drawImage(qrImage, padding, padding, qrSize, qrSize);
+                                    ctx.fillStyle = '#7A8C99'; ctx.font = `600 ${fontSize}px Vazir`; ctx.textAlign = 'center';
+                                    ctx.fillText('qrite.ir', canvas.width / 2, qrSize + padding + textHeight / 1.5);
+                                    URL.revokeObjectURL(qrImage.src); // آزاد کردن حافظه
+                                    canvas.toBlob(resolve, 'image/png');
+                                };
+                                qrImage.onerror = reject;
+                                qrImage.src = URL.createObjectURL(rawData);
+                            });
+                        } else {
+                            finalBlob = await qrCode.getRawData('png');
+                        }
+
+                        if (!finalBlob) return;
+
+                        const file = new File([finalBlob], 'qrite-qrcode.png', { type: 'image/png' });
+                        await navigator.share({
+                            title: 'QR Code by Qrite.ir',
+                            text: `کد QR برای: ${textInput.value.substring(0, 50)}...`,
+                            files: [file]
+                        });
+                    } catch (err) {
+                        if (err.name !== 'AbortError') showToast("اشتراک‌گذاری با خطا مواجه شد.");
+                    }
                 });
-            } catch (error) {
-                console.error(error);
-                qrcodeContainer.innerHTML = '<p class="error-text">خطا: متن بیش از حد طولانی است.</p>';
             }
-            setTimeout(() => {
-                qrcodeContainer.style.opacity = '1';
-            }, 50);
-        }
+            
+            renderHistory();
+            generateOrUpdateQRCode();
+        })();
 
-        textInput.addEventListener('input', () => {
-            clearTimeout(debounceTimeout);
-            statusIndicator.textContent = 'درحال تایپ...';
-            debounceTimeout = setTimeout(() => {
-                statusIndicator.textContent = '';
-                generateQR();
-            }, 400);
-        });
+        // ===========================================
+        // ===== QR CODE READER ======================
+        // ===========================================
+        (function() {
+            let activeVideoStream = null;
+            let animationFrameId = null;
+            
+            const fileInputReader = document.getElementById('file-input-reader');
+            const cameraBtn = document.getElementById('camera-btn');
+            const videoContainer = document.getElementById('video-container');
+            const video = document.getElementById('video-feed');
+            const resultsDiv = document.getElementById('decoded-data');
 
-        pasteBtn.addEventListener('click', () => {
-            textInput.value = '';
-            textInput.focus();
-            statusIndicator.textContent = 'آماده جایگذاری! اکنون Ctrl+V را فشار دهید.';
-        });
+            const showReaderResult = (result) => {
+                let decodedString;
+                try {
+                    const totalLength = result.chunks.reduce((acc, chunk) => acc + chunk.bytes.length, 0);
+                    const allBytes = new Uint8Array(totalLength);
+                    let offset = 0;
+                    for (const chunk of result.chunks) { allBytes.set(chunk.bytes, offset); offset += chunk.bytes.length; }
+                    decodedString = new TextDecoder('utf-8').decode(allBytes);
+                } catch (e) { decodedString = result.data; }
+                let contentHTML = `<div dir="auto">${decodedString.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>`;
+                resultsDiv.innerHTML = contentHTML;
+            };
+
+            const processQrCode = (code) => {
+                if (code) {
+                    showReaderResult(code);
+                    if(activeVideoStream) window.stopCamera();
+                } else {
+                    if(!activeVideoStream) resultsDiv.innerHTML = `<p class="placeholder-text" style="color:var(--danger-color);">کدی یافت نشد.</p>`;
+                }
+            };
+            
+            const tick = () => {
+                if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const code = jsQR(imageData.data, imageData.width, imageData.height);
+                    if (code) processQrCode(code);
+                }
+                if (activeVideoStream) animationFrameId = requestAnimationFrame(tick);
+            };
+
+            window.stopCamera = () => {
+                if (animationFrameId) cancelAnimationFrame(animationFrameId);
+                if (activeVideoStream) {
+                    activeVideoStream.getTracks().forEach(track => track.stop());
+                }
+                videoContainer.style.display = 'none';
+                cameraBtn.textContent = 'استفاده از وب‌کم';
+                activeVideoStream = null;
+            };
+
+            cameraBtn.addEventListener('click', () => {
+                if (activeVideoStream) {
+                    window.stopCamera();
+                } else {
+                    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+                    .then(stream => {
+                        activeVideoStream = stream;
+                        video.srcObject = stream;
+                        videoContainer.style.display = 'block';
+                        video.play();
+                        cameraBtn.textContent = 'توقف دوربین';
+                        resultsDiv.innerHTML = '<p class="placeholder-text">دوربین را به سمت QR Code بگیرید...</p>';
+                        tick();
+                    }).catch(err => {
+                        resultsDiv.innerHTML = `<p class="placeholder-text" style="color:var(--danger-color);">خطا در دسترسی به دوربین.</p>`;
+                    });
+                }
+            });
+
+            fileInputReader.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                window.stopCamera();
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = img.width; canvas.height = img.height;
+                        ctx.drawImage(img, 0, 0, img.width, img.height);
+                        const imageData = ctx.getImageData(0, 0, img.width, img.height);
+                        const code = jsQR(imageData.data, imageData.width, imageData.height);
+                        processQrCode(code);
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        })();
+    });
+
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js'); });
+    }
     </script>
-
 </body>
 </html>
