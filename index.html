@@ -591,7 +591,6 @@
                         return;
                     }
                     
-                    // Create a composite image for download with signature
                     const rawData = await qrCode.getRawData('png');
                     if (!rawData) throw new Error("Could not get QR code data.");
 
@@ -650,6 +649,7 @@
             
             const saveToHistory = (options) => {
                 let history = getHistory();
+                // Prevent storing large base64 strings in history
                 const cleanOptions = {...options, image: options.image ? "has_logo" : null };
                 const existingIndex = history.findIndex(item => item.data === cleanOptions.data);
                 if (existingIndex > -1) history.splice(existingIndex, 1);
@@ -672,7 +672,7 @@
                         li.innerHTML = `<div class="preview"></div><div class="info"><span>${item.data}</span></div><button class="delete-btn" title="حذف از تاریخچه"><svg viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" /></svg></button>`;
                         historyList.appendChild(li);
                         const previewEl = li.querySelector('.preview');
-                        const previewOptions = {...item, width: 40, height: 40, margin: 2, image: null};
+                        const previewOptions = {...item, width: 40, height: 40, margin: 2, image: null}; // Always render preview without logo
                         new QRCodeStyling(previewOptions).append(previewEl);
                     });
                 }
@@ -691,7 +691,8 @@
                     showToast("از تاریخچه حذف شد.");
                 } else {
                     const item = getHistory()[index];
-                    showToast("بازیابی از تاریخچه...");
+                    
+                    // Clear current logo from UI
                     logoImageBase64 = null;
                     updateLogoUI(null);
                     
@@ -699,6 +700,15 @@
                     dotStyleSelect.value = item.dotsOptions.type;
                     correctionLevelSelect.value = item.qrOptions.errorCorrectionLevel;
                     
+                    // --- FIX ---
+                    // Check if the item had a logo. If so, inform the user and generate QR without it.
+                    if (item.image === "has_logo") {
+                        item.image = null; // Set image to null to prevent the library from fetching "has_logo"
+                        showToast("بازیابی شد. لطفا لوگو را مجددا آپلود کنید.");
+                    } else {
+                        showToast("از تاریخچه بازیابی شد.");
+                    }
+
                     generateOrUpdateQRCode(item);
                 }
             });
@@ -717,7 +727,6 @@
             downloadPngBtn.addEventListener('click', () => handleDownload('png'));
             downloadSvgBtn.addEventListener('click', () => handleDownload('svg'));
             
-            // --- Share Button Logic ---
             if (!navigator.share) {
                 shareBtn.style.display = 'none';
             } else {
@@ -738,7 +747,6 @@
                 });
             }
             
-            // --- Initial Load ---
             renderHistory();
             generateOrUpdateQRCode();
         })();
@@ -935,7 +943,6 @@
             });
         })();
         
-        // --- Service Worker Registration ---
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js').catch(err => console.error("Service Worker registration failed: ", err));
