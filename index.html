@@ -427,15 +427,13 @@
             let qrCode = null;
 
             const getQrOptions = () => ({
-    width: 250, 
-    height: 250, 
-    type: 'canvas', 
-    data: textInput.value.trim(),
-    margin: 0, 
-    qrOptions: { errorCorrectionLevel: correctionLevelSelect.value },
-    dotsOptions: { color: '#000000', type: dotStyleSelect.value },
-    backgroundOptions: { color: '#ffffff' },
-});
+                width: 300, height: 300, type: 'canvas', data: textInput.value.trim(),
+                margin: 0, image: logoImageBase64,
+                qrOptions: { errorCorrectionLevel: 'L' },
+                dotsOptions: { color: '#000000', type: dotStyleSelect.value },
+                backgroundOptions: { color: '#ffffff' },
+                imageOptions: { crossOrigin: 'anonymous', margin: 4, imageSize: 0.3 }
+            });
 
             const debouncedSaveToHistory = () => {
                 clearTimeout(historySaveDebounce);
