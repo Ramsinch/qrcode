@@ -259,6 +259,9 @@
             .main-content { padding: 20px; }
             #generator-grid { grid-template-columns: 1fr; }
         }
+	@media (max-width: 400px) {
+           .options-grid {grid-template-columns: 1fr;}
+        }
     </style>
 </head>
 <body>
@@ -427,7 +430,7 @@
             let qrCode = null;
 
             const getQrOptions = () => ({
-                width: 300, height: 300, type: 'canvas', data: textInput.value.trim(),
+                type: 'canvas', data: textInput.value.trim(),
                 margin: 0, image: logoImageBase64,
                 qrOptions: { errorCorrectionLevel: 'L' },
                 dotsOptions: { color: '#000000', type: dotStyleSelect.value },
@@ -446,8 +449,15 @@
                 }, 3000);
             };
 
-            const generateOrUpdateQRCode = (options) => {
-                if (!options) options = getQrOptions();
+           const generateOrUpdateQRCode = (options) => {
+                if (!options) {
+                    const viewerCard = document.getElementById('viewer-card');
+                    const availableWidth = viewerCard.clientWidth - 60; 
+                    const qrSize = Math.max(100, availableWidth);
+                    options = getQrOptions();
+                    options.width = qrSize;
+                    options.height = qrSize;
+                }
                 
                 if (!options.data) {
                     qrcodeContainer.innerHTML = `<p class="placeholder-text" style="text-align:center; margin:auto;">کد شما اینجا نمایش داده می‌شود</p>`;
