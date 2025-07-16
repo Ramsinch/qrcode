@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Qrite.ir - مولد پیشرفته QR Code</title>
+    <title>Qrite.ir - مولد پیشرفته و redesigned QR Code</title>
     <link href="https://cdn.fontcdn.ir/Font/Persian/Vazir/Vazir.css" rel="stylesheet" type="text/css" />
     
     <link rel="manifest" href="manifest.json">
@@ -47,7 +47,7 @@
             width: 100%;
         }
 
-        /* --- Sidebar --- */
+        /* --- Sidebar (Navigation) --- */
         .sidebar {
             width: 80px;
             background-color: var(--panel-bg);
@@ -139,35 +139,67 @@
             font-size: 18px;
             font-weight: 600;
         }
-
-        /* Generator Styles */
+        
+        /* --- Generator Specific Styles --- */
         #generator-grid {
              grid-template-columns: minmax(280px, 1fr) minmax(350px, 1.5fr) minmax(300px, 1fr);
         }
-        textarea {
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .tab-button {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 16px;
+            font-family: 'Vazir';
+            color: var(--text-secondary);
+            position: relative;
+        }
+        .tab-button.active {
+            color: var(--primary-color);
+        }
+        .tab-button.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--primary-color);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        textarea, input[type="text"], input[type="url"], input[type="password"], select {
             width: 100%; padding: 15px; font-size: 16px; font-family: 'Vazir';
             border-radius: 8px; border: 1px solid var(--border-color);
-            resize: vertical; min-height: 140px;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
-        textarea:focus {
+        textarea:focus, input:focus, select:focus {
             outline: none; border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
         }
+        
         .form-section { margin-top: 30px; }
         .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .option-item { margin-bottom: 15px; }
         .option-item label { display: block; font-size: 14px; margin-bottom: 8px; color: var(--text-secondary); }
-        .option-item select, .option-item input[type="text"] {
-            width: 100%; padding: 10px; font-size: 14px; font-family: 'Vazir';
-            border-radius: 8px; border: 1px solid var(--border-color);
-            background-color: #fff;
-        }
+
         .logo-uploader {
             padding: 15px; border: 2px dashed var(--border-color); border-radius: 8px;
             text-align: center; cursor: pointer; transition: border-color 0.2s;
         }
         .logo-uploader:hover { border-color: var(--primary-color); }
-        .logo-uploader span { color: var(--text-secondary); }
         #logo-input { display: none; }
         .logo-preview-container {
             display: none; align-items: center; gap: 15px;
@@ -176,31 +208,16 @@
         .logo-preview-container img { width: 50px; height: 50px; object-fit: contain; }
         .logo-preview-container span { flex-grow: 1; text-align: right; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
         #remove-logo-btn {
-            background: none; border: none; cursor: pointer;
-            width: 24px; height: 24px; padding: 4px;
+            background: none; border: none; cursor: pointer; padding: 4px;
         }
-        #remove-logo-btn svg { fill: var(--text-secondary); transition: fill 0.2s; }
         #remove-logo-btn:hover svg { fill: var(--danger-color); }
-
-        .toggle-switch { display: flex; align-items: center; justify-content: space-between; padding: 15px 0; border-top: 1px solid var(--border-color); margin-top: 20px;}
-        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
-        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--primary-color); }
-        input:checked + .slider:before { transform: translateX(20px); }
-
+        
         /* Viewer Styles */
         .viewer-card { text-align: center; }
-        #qrcode-wrapper { position: relative; display: inline-block; }
         #qrcode-container {
             background: white; padding: 15px; border-radius: var(--border-radius);
             border: 1px solid var(--border-color); display: flex;
-            align-items: center; justify-content: center;
-        }
-        #qrcode-signature {
-            display: none; font-size: 14px; font-weight: 600;
-            color: var(--text-secondary); margin-top: 10px;
+            align-items: center; justify-content: center; min-height: 280px;
         }
         .button-group { display: flex; flex-wrap:wrap; gap: 10px; margin-top: 25px; }
         .btn {
@@ -212,55 +229,34 @@
         .btn-primary:hover:not(:disabled) { background-color: var(--primary-hover); }
         .btn-secondary { background-color: #E6EAF0; color: var(--text-primary); }
         .btn-secondary:hover:not(:disabled) { background-color: #D9DEE6; }
-        .btn:disabled { background-color: #f0f0f0; color: #aaa; cursor: not-allowed; transform: none !important; }
+        .btn:disabled { background-color: #f0f0f0; color: #aaa; cursor: not-allowed; }
 
-        /* History & Reader Styles */
-        .full-width-card { grid-column: 1 / -1; }
-        #history-list { list-style: none; padding: 0; margin: 0; max-height: 500px; overflow-y: auto; }
-        .history-item { display: flex; align-items: center; padding: 10px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: background-color 0.2s; }
+        /* History Styles */
+        .history-panel { grid-column: 1 / -1; }
+        #history-list { list-style: none; padding: 0; margin: 0; max-height: 300px; overflow-y: auto; }
+        .history-item { display: flex; align-items: center; padding: 10px; border-bottom: 1px solid var(--border-color); cursor: pointer; }
         .history-item:hover { background-color: #f8f9fa; }
         .history-item .preview { width: 40px; height: 40px; border-radius: 4px; margin-left: 10px; flex-shrink: 0; }
         .history-item .info { flex-grow: 1; overflow: hidden; }
         .history-item .info span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 14px; }
+        .history-item .timestamp { font-size: 12px; color: var(--text-secondary); }
         .history-item .delete-btn { background: none; border: none; cursor: pointer; padding: 5px; flex-shrink: 0; }
-        .history-item .delete-btn svg { width:18px; height:18px; fill: #999; }
         .history-item .delete-btn:hover svg { fill: var(--danger-color); }
-        .placeholder-text { font-size: 14px; color: var(--text-secondary); }
-        
-        #reader-results { width: 100%; padding: 20px; border: 1px dashed var(--border-color); border-radius: 8px; min-height: 100px; word-wrap: break-word; }
-        #decoded-data { font-size: 16px; background-color: #F9FAFB; padding: 10px; border-radius: 6px; white-space: pre-wrap; user-select: text; margin-top: 15px; }
-        
-        /* Sync Styles */
-        #sync-controls { display: none; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border-color); }
-        #sync-status { margin-top: 10px; font-size: 14px; text-align: center; }
-        #receiver-form { display: none; }
+        .placeholder-text { text-align: center; padding: 20px; color: var(--text-secondary); }
 
-        /* Toast Notification */
-        .toast-container { position: fixed; bottom: 20px; left: 20px; z-index: 1000; }
-        .toast {
-            background-color: rgba(20, 20, 20, 0.9); color: white;
-            padding: 12px 20px; border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            animation: toast-in 0.5s ease, toast-out 0.5s ease 2.5s forwards;
-        }
-        @keyframes toast-in { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes toast-out { from { transform: translateY(0); opacity: 1; } to { transform: translateY(100px); opacity: 0; } }
-
-        /* Responsive */
+        /* --- Responsive Design --- */
         @media (max-width: 1200px) {
-            #generator-grid { grid-template-columns: minmax(320px, 1.5fr) minmax(300px, 1fr); }
-            .history-panel { grid-row: 2; grid-column: 1 / -1; }
+            #generator-grid { grid-template-columns: 1fr 1fr; }
         }
         @media (max-width: 768px) {
             .app-wrapper { flex-direction: column-reverse; }
             .sidebar { width: 100%; height: 60px; flex-direction: row; justify-content: space-around; border-top: 1px solid var(--border-color); border-left: none; }
             .sidebar-logo { display: none; }
             .nav-item button.active::before { width: 60%; height: 3px; top: 0; right: 50%; transform: translateX(50%); border-radius: 0 0 3px 3px; }
-            .main-content { padding: 20px; }
+            .main-content { padding: 15px; }
             #generator-grid { grid-template-columns: 1fr; }
-        }
-	@media (max-width: 400px) {
-           .options-grid {grid-template-columns: 1fr;}
+            .card { padding: 20px; }
+            .page-header h1 { font-size: 24px; }
         }
     </style>
 </head>
@@ -284,41 +280,79 @@
 
         <main class="main-content">
             <div id="generator-view" class="view-content active">
-                <header class="page-header"><h1>تولید کننده QR Code</h1></header>
+                <header class="page-header"><h1>تولید کننده پیشرفته QR Code</h1></header>
                 <div id="generator-grid" class="content-grid">
-                    <div class="card history-panel">
-                        <div class="card-header">
-                            تاریخچه
-                            <button id="sync-btn" class="btn btn-secondary" style="float:left; padding: 5px 10px; font-size: 14px;">همگام‌سازی</button>
+                    
+                    <div class="card">
+                        <div class="card-header">نوع محتوا</div>
+                        <div class="tabs">
+                            <button class="tab-button active" data-tab="text-tab">متن</button>
+                            <button class="tab-button" data-tab="url-tab">لینک</button>
+                            <button class="tab-button" data-tab="wifi-tab">Wi-Fi</button>
+                            <button class="tab-button" data-tab="vcard-tab">vCard</button>
                         </div>
-                        <div id="sync-controls">
-                            <div class="button-group">
-                                <button id="send-btn" class="btn btn-primary">ارسال داده</button>
-                                <button id="receive-btn" class="btn btn-secondary">دریافت داده</button>
-                            </div>
-                            <div id="receiver-form" class="option-item" style="margin-top: 15px;">
-                                <label for="peer-id-input">کد ۶ رقمی را وارد کنید:</label>
-                                <input type="text" id="peer-id-input" maxlength="6" placeholder="مثلا 123456">
-                                <button id="connect-btn" class="btn btn-primary" style="margin-top:10px; width:100%;">اتصال</button>
-                            </div>
-                            <div id="sync-status"></div>
+                        <div id="text-tab" class="tab-content active">
+                            <textarea id="text-input" rows="5" placeholder="متن خود را اینجا وارد کنید..."></textarea>
                         </div>
-                        <div id="history-list-container">
-                             <ul id="history-list"><p class="placeholder-text" id="history-placeholder">تاریخچه‌ای یافت نشد.</p></ul>
+                        <div id="url-tab" class="tab-content">
+                            <input type="url" id="url-input" placeholder="https://example.com">
+                        </div>
+                        <div id="wifi-tab" class="tab-content">
+                            <div class="option-item">
+                                <label for="wifi-ssid">نام شبکه (SSID)</label>
+                                <input type="text" id="wifi-ssid">
+                            </div>
+                            <div class="option-item">
+                                <label for="wifi-password">رمز عبور</label>
+                                <input type="password" id="wifi-password">
+                            </div>
+                            <div class="option-item">
+                                <label for="wifi-encryption">نوع رمزنگاری</label>
+                                <select id="wifi-encryption">
+                                    <option value="WPA">WPA/WPA2</option>
+                                    <option value="WEP">WEP</option>
+                                    <option value="nopass">بدون رمز</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="vcard-tab" class="tab-content">
+                            <div class="option-item">
+                                <label for="vcard-name">نام و نام خانوادگی</label>
+                                <input type="text" id="vcard-name">
+                            </div>
+                            <div class="option-item">
+                                <label for="vcard-phone">تلفن</label>
+                                <input type="text" id="vcard-phone">
+                            </div>
+                            <div class="option-item">
+                                <label for="vcard-email">ایمیل</label>
+                                <input type="text" id="vcard-email">
+                            </div>
                         </div>
                     </div>
-                    <div class="card" id="editor-card">
-                        <div class="card-header">محتوا و تنظیمات</div>
-                        <div class="input-group">
-                            <textarea id="text-input" rows="5" placeholder="متن یا لینک خود را اینجا وارد کنید..."></textarea>
-                        </div>
-                        <div class="form-section">
-                            <div class="options-grid">
-                                <div class="option-item"><label for="dot-style">استایل نقطه‌ها</label><select id="dot-style"><option value="square">مربعی</option><option value="dots">نقطه‌ای</option><option value="rounded">گرد</option></select></div>
-                                <div class="option-item"><label for="correction-level">سطح تصحیح خطا</label><select id="correction-level"><option value="L">پایین</option><option value="M">متوسط</option><option value="Q">بالا</option><option value="H">بسیار بالا</option></select></div>
+
+                    <div class="card">
+                        <div class="card-header">شخصی‌سازی</div>
+                        <div class="options-grid">
+                            <div class="option-item">
+                                <label for="dot-style">استایل نقطه‌ها</label>
+                                <select id="dot-style">
+                                    <option value="square">مربعی</option>
+                                    <option value="dots">نقطه‌ای</option>
+                                    <option value="rounded">گرد</option>
+                                </select>
+                            </div>
+                            <div class="option-item">
+                                <label for="correction-level">سطح تصحیح خطا</label>
+                                <select id="correction-level">
+                                    <option value="L">پایین</option>
+                                    <option value="M" selected>متوسط</option>
+                                    <option value="Q">بالا</option>
+                                    <option value="H">بسیار بالا</option>
+                                </select>
                             </div>
                         </div>
-                         <div class="form-section">
+                        <div class="form-section">
                             <label class="option-item" for="logo-uploader">لوگو</label>
                             <label for="logo-input" id="logo-uploader" class="logo-uploader"><span>برای آپلود لوگو کلیک کنید</span></label>
                             <input type="file" id="logo-input" accept="image/*">
@@ -328,612 +362,266 @@
                                 <button id="remove-logo-btn" title="حذف لوگو"><svg viewBox="0 0 24 24"><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" /></svg></button>
                             </div>
                         </div>
-                        <div class="toggle-switch">
-                            <label for="signature-switch">افزودن امضای سایت</label>
-                            <label class="switch">
-                                <input type="checkbox" id="signature-switch">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
                     </div>
-                    <div class="card viewer-card" id="viewer-card">
+                    
+                    <div class="card viewer-card">
                          <div class="card-header">پیش‌نمایش</div>
-                         <div id="qrcode-wrapper">
-                             <div id="qrcode-container"><p class="placeholder-text" style="text-align:center;">کد شما اینجا نمایش داده می‌شود</p></div>
-                             <div id="qrcode-signature">qrite.ir</div>
-                         </div>
+                         <div id="qrcode-container"><p class="placeholder-text">کد شما اینجا نمایش داده می‌شود</p></div>
                          <div class="button-group">
                             <button id="download-png-btn" class="btn btn-primary" disabled>دانلود PNG</button>
                             <button id="download-svg-btn" class="btn btn-secondary" disabled>دانلود SVG</button>
-                            <button id="share-btn" class="btn btn-secondary">اشتراک گذاری</button>
                          </div>
+                    </div>
+                    
+                    <div class="card history-panel">
+                        <div class="card-header">تاریخچه</div>
+                        <ul id="history-list"><p class="placeholder-text">تاریخچه‌ای یافت نشد.</p></ul>
                     </div>
                 </div>
             </div>
 
             <div id="reader-view" class="view-content">
-                <header class="page-header"><h1>خواندن</h1></header>
-                <div class="card full-width-card">
-                    <div class="button-group" style="justify-content:center; margin-top:0; margin-bottom:20px;">
-                        <label for="file-input-reader" class="btn btn-primary">آپلود تصویر</label>
-                        <input type="file" id="file-input-reader" accept="image/*" style="display:none;">
-                        <button id="camera-btn" class="btn btn-secondary">استفاده از وب‌کم</button>
-                    </div>
-                    <div id="video-container" style="display:none; border-radius: var(--border-radius); overflow:hidden;"><video id="video-feed" playsinline></video></div>
-                    <div id="reader-results" style="margin-top:20px;"><h3>نتیجه اسکن:</h3><div id="decoded-data"><p class="placeholder-text">منتظر اسکن یا آپلود تصویر...</p></div></div>
-                </div>
+                 <header class="page-header"><h1>خواندن QR Code</h1></header>
+                 <div class="card full-width-card">
+                     <div class="button-group" style="justify-content:center; margin-top:0; margin-bottom:20px;">
+                         <label for="file-input-reader" class="btn btn-primary">آپلود تصویر</label>
+                         <input type="file" id="file-input-reader" accept="image/*" style="display:none;">
+                         <button id="camera-btn" class="btn btn-secondary">استفاده از وب‌کم</button>
+                     </div>
+                     <div id="video-container" style="display:none; border-radius: var(--border-radius); overflow:hidden;"><video id="video-feed" playsinline></video></div>
+                     <div id="reader-results" style="margin-top:20px;"><h3>نتیجه اسکن:</h3><div id="decoded-data"><p class="placeholder-text">منتظر اسکن یا آپلود تصویر...</p></div></div>
+                 </div>
             </div>
-			<footer>طراحی و توسعه توسط <a href="https://www.linkedin.com/in/ramsinchaabian/">رامسین چعبیان</a></footer>
+            <footer style="text-align: center; padding: 20px; color: var(--text-secondary);">طراحی و توسعه توسط <a href="https://www.linkedin.com/in/ramsinchaabian/" target="_blank">رامسین چعبیان</a></footer>
         </main>
     </div>
-    <div id="toast-container" class="toast-container"></div>
-
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        // --- Global App State & Elements ---
-        const navButtons = document.querySelectorAll('.nav-button');
-        const views = document.querySelectorAll('.view-content');
-        const toastContainer = document.getElementById('toast-container');
-        let currentView = 'generator-view';
+        const qrcodeContainer = document.getElementById('qrcode-container');
+        const textInput = document.getElementById('text-input');
+        const urlInput = document.getElementById('url-input');
+        const wifiSsidInput = document.getElementById('wifi-ssid');
+        const wifiPasswordInput = document.getElementById('wifi-password');
+        const wifiEncryptionSelect = document.getElementById('wifi-encryption');
+        const vcardNameInput = document.getElementById('vcard-name');
+        const vcardPhoneInput = document.getElementById('vcard-phone');
+        const vcardEmailInput = document.getElementById('vcard-email');
+
+        const dotStyleSelect = document.getElementById('dot-style');
+        const correctionLevelSelect = document.getElementById('correction-level');
+        const logoInput = document.getElementById('logo-input');
+        const removeLogoBtn = document.getElementById('remove-logo-btn');
+        const downloadPngBtn = document.getElementById('download-png-btn');
+        const downloadSvgBtn = document.getElementById('download-svg-btn');
         
-        const showToast = (message, type = 'info') => {
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.textContent = message;
-            if (type === 'success') {
-                toast.style.backgroundColor = 'var(--success-color)';
-            } else if (type === 'error') {
-                toast.style.backgroundColor = 'var(--danger-color)';
+        const tabs = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        let activeTab = 'text-tab';
+        let logoImageBase64 = null;
+        let qrCode = null;
+        let qrCodeUpdateDebounce = null;
+        
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetTab = tab.dataset.tab;
+                if (targetTab === activeTab) return;
+                
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                tabContents.forEach(content => content.classList.remove('active'));
+                document.getElementById(targetTab).classList.add('active');
+                
+                activeTab = targetTab;
+                handleStateChange();
+            });
+        });
+
+        const getQrData = () => {
+            switch (activeTab) {
+                case 'url-tab':
+                    return urlInput.value;
+                case 'wifi-tab':
+                    const ssid = wifiSsidInput.value;
+                    const password = wifiPasswordInput.value;
+                    const encryption = wifiEncryptionSelect.value;
+                    return `WIFI:T:${encryption};S:${ssid};P:${password};;`;
+                case 'vcard-tab':
+                    const name = vcardNameInput.value;
+                    const phone = vcardPhoneInput.value;
+                    const email = vcardEmailInput.value;
+                    return `BEGIN:VCARD\nVERSION:3.0\nN:${name}\nTEL:${phone}\nEMAIL:${email}\nEND:VCARD`;
+                case 'text-tab':
+                default:
+                    return textInput.value;
             }
-            toastContainer.appendChild(toast);
-            setTimeout(() => { toast.remove(); }, 3000);
         };
 
-        // --- Navigation Logic ---
-        navButtons.forEach(button => {
+        const generateOrUpdateQRCode = () => {
+            const data = getQrData().trim();
+
+            if (!data) {
+                qrcodeContainer.innerHTML = '<p class="placeholder-text">کد شما اینجا نمایش داده می‌شود</p>';
+                downloadPngBtn.disabled = true;
+                downloadSvgBtn.disabled = true;
+                qrCode = null;
+                return;
+            }
+
+            const options = {
+                width: 250,
+                height: 250,
+                data: data,
+                image: logoImageBase64,
+                dotsOptions: {
+                    type: dotStyleSelect.value,
+                    color: '#000'
+                },
+                qrOptions: {
+                    errorCorrectionLevel: correctionLevelSelect.value
+                },
+                imageOptions: {
+                    crossOrigin: 'anonymous',
+                    margin: 4
+                }
+            };
+            
+            if (!logoImageBase64) delete options.image;
+
+            qrcodeContainer.innerHTML = '';
+            try {
+                qrCode = new QRCodeStyling(options);
+                qrCode.append(qrcodeContainer);
+                downloadPngBtn.disabled = false;
+                downloadSvgBtn.disabled = false;
+                saveToHistory(data);
+            } catch (error) {
+                qrcodeContainer.innerHTML = '<p class="placeholder-text" style="color:var(--danger-color);">خطا: متن بیش از حد طولانی است.</p>';
+                downloadPngBtn.disabled = true;
+                downloadSvgBtn.disabled = true;
+                qrCode = null;
+            }
+        };
+
+        const handleStateChange = () => {
+            clearTimeout(qrCodeUpdateDebounce);
+            qrCodeUpdateDebounce = setTimeout(generateOrUpdateQRCode, 300);
+        };
+
+        const handleLogoUpload = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    logoImageBase64 = event.target.result;
+                    document.getElementById('logo-uploader').style.display = 'none';
+                    document.getElementById('logo-preview').style.display = 'flex';
+                    document.getElementById('logo-preview-image').src = logoImageBase64;
+                    document.getElementById('logo-preview-name').textContent = file.name;
+                    handleStateChange();
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+
+        removeLogoBtn.addEventListener('click', () => {
+            logoImageBase64 = null;
+            logoInput.value = '';
+            document.getElementById('logo-uploader').style.display = 'block';
+            document.getElementById('logo-preview').style.display = 'none';
+            handleStateChange();
+        });
+
+        const getHistory = () => JSON.parse(localStorage.getItem('qrHistory_v3') || '[]');
+        const saveHistory = (history) => localStorage.setItem('qrHistory_v3', JSON.stringify(history));
+
+        const saveToHistory = (data) => {
+            if (!data) return;
+            let history = getHistory();
+            const newItem = {
+                data: data,
+                timestamp: new Date().toLocaleString('fa-IR')
+            };
+            const existingIndex = history.findIndex(item => item.data === data);
+            if (existingIndex > -1) history.splice(existingIndex, 1);
+            history.unshift(newItem);
+            if (history.length > 10) history = history.slice(0, 10);
+            saveHistory(history);
+            renderHistory();
+        };
+
+        const renderHistory = () => {
+            const historyList = document.getElementById('history-list');
+            const history = getHistory();
+            historyList.innerHTML = '';
+            if (history.length === 0) {
+                historyList.innerHTML = '<p class="placeholder-text">تاریخچه‌ای یافت نشد.</p>';
+            } else {
+                history.forEach((item, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'history-item';
+                    li.dataset.index = index;
+                    li.innerHTML = `
+                        <div class="preview"></div>
+                        <div class="info">
+                            <span>${item.data.substring(0, 50)}...</span>
+                            <span class="timestamp">${item.timestamp}</span>
+                        </div>
+                        <button class="delete-btn" title="حذف"><svg viewBox="0 0 24 24" width="18" height="18" fill="#999"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" /></svg></button>
+                    `;
+                    historyList.appendChild(li);
+                    const previewOptions = { width: 40, height: 40, data: item.data };
+                    new QRCodeStyling(previewOptions).append(li.querySelector('.preview'));
+                });
+            }
+        };
+        
+        historyList.addEventListener('click', (e) => {
+            const itemLi = e.target.closest('.history-item');
+            if (!itemLi) return;
+            const index = itemLi.dataset.index;
+            if (e.target.closest('.delete-btn')) {
+                e.stopPropagation();
+                let history = getHistory();
+                history.splice(index, 1);
+                saveHistory(history);
+                renderHistory();
+            } else {
+                const item = getHistory()[index];
+                textInput.value = item.data; // Simple restore, can be improved
+                document.querySelector('.tab-button[data-tab="text-tab"]').click();
+                handleStateChange();
+            }
+        });
+
+        // Event Listeners
+        [textInput, urlInput, wifiSsidInput, wifiPasswordInput, vcardNameInput, vcardPhoneInput, vcardEmailInput].forEach(input => {
+            input.addEventListener('input', handleStateChange);
+        });
+        [dotStyleSelect, correctionLevelSelect, wifiEncryptionSelect].forEach(select => {
+            select.addEventListener('change', handleStateChange);
+        });
+        logoInput.addEventListener('change', handleLogoUpload);
+        
+        downloadPngBtn.addEventListener('click', () => qrCode?.download({ name: 'qrite-qrcode', extension: 'png' }));
+        downloadSvgBtn.addEventListener('click', () => qrCode?.download({ name: 'qrite-qrcode', extension: 'svg' }));
+
+        // --- Navigation ---
+        document.querySelectorAll('.nav-button').forEach(button => {
             button.addEventListener('click', () => {
                 const targetView = button.dataset.view;
-                if (targetView === currentView) return;
-                if (currentView === 'reader-view') window.stopCamera?.();
-                navButtons.forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
                 button.classList.add('active');
-                views.forEach(view => view.classList.remove('active'));
+                document.querySelectorAll('.view-content').forEach(view => view.classList.remove('active'));
                 document.getElementById(targetView).classList.add('active');
-                currentView = targetView;
             });
         });
         
-        // ===========================================
-        // ===== QR CODE GENERATOR ===================
-        // ===========================================
-        (function() {
-            const textInput = document.getElementById('text-input');
-            const qrcodeContainer = document.getElementById('qrcode-container');
-            const downloadPngBtn = document.getElementById('download-png-btn');
-            const downloadSvgBtn = document.getElementById('download-svg-btn');
-            const shareBtn = document.getElementById('share-btn');
-            const historyList = document.getElementById('history-list');
-            const dotStyleSelect = document.getElementById('dot-style');
-            const correctionLevelSelect = document.getElementById('correction-level');
-            const logoInput = document.getElementById('logo-input');
-            const logoUploader = document.getElementById('logo-uploader');
-            const logoPreview = document.getElementById('logo-preview');
-            const logoPreviewImage = document.getElementById('logo-preview-image');
-            const logoPreviewName = document.getElementById('logo-preview-name');
-            const removeLogoBtn = document.getElementById('remove-logo-btn');
-            const signatureSwitch = document.getElementById('signature-switch');
-            const signatureDiv = document.getElementById('qrcode-signature');
-            
-            let qrCodeUpdateDebounce = null;
-            let historySaveDebounce = null;
-            let logoImageBase64 = null;
-            let qrCode = null;
-
-            const getQrOptions = () => ({
-                type: 'canvas', data: textInput.value.trim(),
-                margin: 0, image: logoImageBase64,
-                qrOptions: { errorCorrectionLevel: 'L' },
-                dotsOptions: { color: '#000000', type: dotStyleSelect.value },
-                backgroundOptions: { color: '#ffffff' },
-                imageOptions: { crossOrigin: 'anonymous', margin: 4, imageSize: 0.3 }
-            });
-
-            const debouncedSaveToHistory = () => {
-                clearTimeout(historySaveDebounce);
-                historySaveDebounce = setTimeout(() => {
-                    const options = getQrOptions();
-                    if (options.data) {
-                        saveToHistory(options);
-                        showToast("تغییرات در تاریخچه ذخیره شد.");
-                    }
-                }, 3000);
-            };
-
-           const generateOrUpdateQRCode = (options) => {
-                if (!options) {
-                    const viewerCard = document.getElementById('viewer-card');
-                    const availableWidth = viewerCard.clientWidth - 60; 
-                    const qrSize = Math.max(100, availableWidth);
-                    options = getQrOptions();
-                    options.width = qrSize;
-                    options.height = qrSize;
-                }
-                
-                if (!options.data) {
-                    qrcodeContainer.innerHTML = `<p class="placeholder-text" style="text-align:center; margin:auto;">کد شما اینجا نمایش داده می‌شود</p>`;
-                    [downloadPngBtn, downloadSvgBtn, shareBtn].forEach(b => b.disabled = true);
-                    qrCode = null;
-                    return;
-                }
-                
-                if (!options.image) delete options.image;
-                qrcodeContainer.innerHTML = '';
-                try {
-                    qrCode = new QRCodeStyling(options);
-                    qrCode.append(qrcodeContainer);
-                    [downloadPngBtn, downloadSvgBtn, shareBtn].forEach(b => b.disabled = false);
-                    updateSignatureVisibility();
-                } catch(error) {
-                    qrcodeContainer.innerHTML = `<p class="placeholder-text" style="color:var(--danger-color);text-align:center;margin:auto;">خطا: متن بیش از حد طولانی است.</p>`;
-                    [downloadPngBtn, downloadSvgBtn, shareBtn].forEach(b => b.disabled = true);
-                    qrCode = null;
-                }
-            };
-            
-            const handleStateChange = () => {
-                clearTimeout(qrCodeUpdateDebounce);
-                qrCodeUpdateDebounce = setTimeout(() => generateOrUpdateQRCode(), 300);
-                debouncedSaveToHistory();
-            };
-
-            const updateSignatureVisibility = () => {
-                signatureDiv.style.display = signatureSwitch.checked && qrCode ? 'block' : 'none';
-            };
-
-            const updateLogoUI = (file) => {
-                if (file && logoImageBase64) {
-                    logoUploader.style.display = 'none';
-                    logoPreview.style.display = 'flex';
-                    logoPreviewImage.src = logoImageBase64;
-                    logoPreviewName.textContent = file.name;
-                } else {
-                    logoUploader.style.display = 'block';
-                    logoPreview.style.display = 'none';
-                    logoInput.value = '';
-                    logoImageBase64 = null;
-                }
-            };
-
-            const handleLogoUpload = (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        logoImageBase64 = event.target.result;
-                        updateLogoUI(file);
-                        handleStateChange();
-                    };
-                    reader.readAsDataURL(file);
-                }
-            };
-            
-            const handleDownload = async (extension) => {
-                if (!qrCode) return;
-
-                try {
-                    if (!signatureSwitch.checked) {
-                        qrCode.download({ name: 'qrite', extension: extension });
-                        return;
-                    }
-
-                    const rawData = await qrCode.getRawData('png');
-                    if (!rawData) {
-                        showToast("خطا در دریافت داده‌های QR Code.", 'error');
-                        return;
-                    }
-
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    const qrImage = new Image();
-
-                    await new Promise((resolve, reject) => {
-                        qrImage.onload = () => {
-                            const qrSize = 250;
-                            const padding = 20;
-                            const fontSize = 18;
-                            const textHeight = 40;
-
-                            canvas.width = qrSize + padding * 2;
-                            canvas.height = qrSize + padding * 2 + textHeight;
-
-                            ctx.fillStyle = '#ffffff';
-                            ctx.fillRect(0, 0, canvas.width, canvas.height);
-                            ctx.drawImage(qrImage, padding, padding, qrSize, qrSize);
-                            ctx.fillStyle = '#7A8C99';
-                            ctx.font = `600 ${fontSize}px Vazir`;
-                            ctx.textAlign = 'center';
-                            ctx.fillText('qrite.ir', canvas.width / 2, qrSize + padding + textHeight / 1.5);
-                            
-                            URL.revokeObjectURL(qrImage.src);
-                            resolve();
-                        };
-                        qrImage.onerror = reject;
-
-                        qrImage.src = URL.createObjectURL(rawData);
-                    });
-
-                    const link = document.createElement('a');
-                    link.download = `qrite-signed.${extension}`;
-                    
-                    if (extension === 'svg') {
-                        const svgContent = `
-                            <svg width="${canvas.width}" height="${canvas.height}" xmlns="http://www.w3.org/2000/svg">
-                                <image href="${canvas.toDataURL('image/png')}" width="${canvas.width}" height="${canvas.height}"/>
-                            </svg>`;
-                        link.href = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgContent);
-                    } else {
-                        link.href = canvas.toDataURL('image/png');
-                    }
-                    link.click();
-
-                } catch (err) {
-                    console.error("Download failed:", err);
-                    showToast("خطا در آماده‌سازی دانلود.", 'error');
-                }
-            };
-            
-            window.getHistory = () => JSON.parse(localStorage.getItem('qrHistory_v2') || '[]');
-            window.saveHistory = (history) => localStorage.setItem('qrHistory_v2', JSON.stringify(history));
-            
-            const saveToHistory = (options) => {
-                let history = getHistory();
-                const cleanOptions = {...options, image: options.image ? "has_logo" : null };
-                const existingIndex = history.findIndex(item => item.data === cleanOptions.data);
-                if (existingIndex > -1) history.splice(existingIndex, 1);
-                history.unshift(cleanOptions);
-                if (history.length > 15) history = history.slice(0, 15);
-                saveHistory(history);
-                renderHistory();
-            };
-
-            window.renderHistory = () => {
-                const history = getHistory();
-                historyList.innerHTML = '';
-                if (history.length === 0) {
-                    historyList.innerHTML = '<p class="placeholder-text" style="padding:10px;text-align:center;">تاریخچه‌ای یافت نشد.</p>';
-                } else {
-                    history.forEach((item, index) => {
-                        const li = document.createElement('li');
-                        li.className = 'history-item';
-                        li.setAttribute('data-index', index);
-                        li.innerHTML = `<div class="preview"></div><div class="info"><span>${item.data}</span></div><button class="delete-btn" title="حذف از تاریخچه"><svg viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" /></svg></button>`;
-                        historyList.appendChild(li);
-                        const previewEl = li.querySelector('.preview');
-                        const previewOptions = {...item, width: 40, height: 40, margin: 0, image: null};
-                        new QRCodeStyling(previewOptions).append(previewEl);
-                    });
-                }
-            };
-            
-            historyList.addEventListener('click', (e) => {
-                const itemLi = e.target.closest('.history-item');
-                if (!itemLi) return;
-                const index = itemLi.getAttribute('data-index');
-                if (e.target.closest('.delete-btn')) {
-                    e.stopPropagation();
-                    let history = getHistory();
-                    history.splice(index, 1);
-                    saveHistory(history);
-                    renderHistory();
-                    showToast("از تاریخچه حذف شد.");
-                } else {
-                    const item = getHistory()[index];
-                    showToast("بازیابی از تاریخچه...");
-                    logoImageBase64 = null;
-                    updateLogoUI(null);
-                    
-                    textInput.value = item.data;
-                    dotStyleSelect.value = item.dotsOptions.type;
-                    correctionLevelSelect.value = item.qrOptions.errorCorrectionLevel;
-                    
-                    generateOrUpdateQRCode(item);
-                }
-            });
-
-            textInput.addEventListener('input', handleStateChange);
-            [dotStyleSelect, correctionLevelSelect, signatureSwitch].forEach(el => el.addEventListener('change', handleStateChange));
-            logoInput.addEventListener('change', handleLogoUpload);
-            removeLogoBtn.addEventListener('click', () => {
-                logoImageBase64 = null;
-                updateLogoUI(null);
-                generateOrUpdateQRCode(); // Use direct call for instant feedback
-                debouncedSaveToHistory();
-                showToast("لوگو حذف شد.");
-            });
-            
-            downloadPngBtn.addEventListener('click', () => handleDownload('png'));
-            downloadSvgBtn.addEventListener('click', () => handleDownload('svg'));
-            
-            if (!navigator.share) {
-                shareBtn.style.display = 'none';
-            } else {
-                shareBtn.addEventListener('click', async () => {
-                    if (!qrCode) return;
-                    try {
-                        let finalBlob;
-
-                        if (signatureSwitch.checked) {
-                            const rawData = await qrCode.getRawData('png');
-                            if (!rawData) return;
-                            
-                            finalBlob = await new Promise((resolve, reject) => {
-                                const canvas = document.createElement('canvas');
-                                const ctx = canvas.getContext('2d');
-                                const qrImage = new Image();
-                                qrImage.onload = () => {
-                                    const qrSize = 250, padding = 20, fontSize = 18, textHeight = 40;
-                                    canvas.width = qrSize + padding * 2; canvas.height = qrSize + padding * 2 + textHeight;
-                                    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-                                    ctx.drawImage(qrImage, padding, padding, qrSize, qrSize);
-                                    ctx.fillStyle = '#7A8C99'; ctx.font = `600 ${fontSize}px Vazir`; ctx.textAlign = 'center';
-                                    ctx.fillText('qrite.ir', canvas.width / 2, qrSize + padding + textHeight / 1.5);
-                                    URL.revokeObjectURL(qrImage.src); 
-                                    canvas.toBlob(resolve, 'image/png');
-                                };
-                                qrImage.onerror = reject;
-                                qrImage.src = URL.createObjectURL(rawData);
-                            });
-                        } else {
-                            finalBlob = await qrCode.getRawData('png');
-                        }
-
-                        if (!finalBlob) return;
-
-                        const file = new File([finalBlob], 'qrite-qrcode.png', { type: 'image/png' });
-                        await navigator.share({
-                            title: 'QR Code by Qrite.ir',
-                            text: `کد QR برای: ${textInput.value.substring(0, 50)}...`,
-                            files: [file]
-                        });
-                    } catch (err) {
-                        if (err.name !== 'AbortError') showToast("اشتراک‌گذاری با خطا مواجه شد.", 'error');
-                    }
-                });
-            }
-            
-            renderHistory();
-            generateOrUpdateQRCode();
-        })();
-
-        // ===========================================
-        // ===== QR CODE READER ======================
-        // ===========================================
-        (function() {
-            let activeVideoStream = null;
-            let animationFrameId = null;
-            
-            const fileInputReader = document.getElementById('file-input-reader');
-            const cameraBtn = document.getElementById('camera-btn');
-            const videoContainer = document.getElementById('video-container');
-            const video = document.getElementById('video-feed');
-            const resultsDiv = document.getElementById('decoded-data');
-
-            const showReaderResult = (result) => {
-                let decodedString;
-                try {
-                    const totalLength = result.chunks.reduce((acc, chunk) => acc + chunk.bytes.length, 0);
-                    const allBytes = new Uint8Array(totalLength);
-                    let offset = 0;
-                    for (const chunk of result.chunks) { allBytes.set(chunk.bytes, offset); offset += chunk.bytes.length; }
-                    decodedString = new TextDecoder('utf-8').decode(allBytes);
-                } catch (e) { decodedString = result.data; }
-                let contentHTML = `<div dir="auto">${decodedString.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>`;
-                resultsDiv.innerHTML = contentHTML;
-            };
-
-            const processQrCode = (code) => {
-                if (code) {
-                    showReaderResult(code);
-                    if(activeVideoStream) window.stopCamera();
-                } else {
-                    if(!activeVideoStream) resultsDiv.innerHTML = `<p class="placeholder-text" style="color:var(--danger-color);">کدی یافت نشد.</p>`;
-                }
-            };
-            
-            const tick = () => {
-                if (video.readyState === video.HAVE_ENOUGH_DATA) {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                    const code = jsQR(imageData.data, imageData.width, imageData.height);
-                    if (code) processQrCode(code);
-                }
-                if (activeVideoStream) animationFrameId = requestAnimationFrame(tick);
-            };
-
-            window.stopCamera = () => {
-                if (animationFrameId) cancelAnimationFrame(animationFrameId);
-                if (activeVideoStream) {
-                    activeVideoStream.getTracks().forEach(track => track.stop());
-                }
-                videoContainer.style.display = 'none';
-                cameraBtn.textContent = 'استفاده از وب‌کم';
-                activeVideoStream = null;
-            };
-
-            cameraBtn.addEventListener('click', () => {
-                if (activeVideoStream) {
-                    window.stopCamera();
-                } else {
-                    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-                    .then(stream => {
-                        activeVideoStream = stream;
-                        video.srcObject = stream;
-                        videoContainer.style.display = 'block';
-                        video.play();
-                        cameraBtn.textContent = 'توقف دوربین';
-                        resultsDiv.innerHTML = '<p class="placeholder-text">دوربین را به سمت QR Code بگیرید...</p>';
-                        tick();
-                    }).catch(err => {
-                        resultsDiv.innerHTML = `<p class="placeholder-text" style="color:var(--danger-color);">خطا در دسترسی به دوربین.</p>`;
-                    });
-                }
-            });
-
-            fileInputReader.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                window.stopCamera();
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
-                        canvas.width = img.width; canvas.height = img.height;
-                        ctx.drawImage(img, 0, 0, img.width, img.height);
-                        const imageData = ctx.getImageData(0, 0, img.width, img.height);
-                        const code = jsQR(imageData.data, imageData.width, imageData.height);
-                        processQrCode(code);
-                    };
-                    img.src = event.target.result;
-                };
-                reader.readAsDataURL(file);
-            });
-        })();
-
-        // ===========================================
-        // ===== SYNC (PEERJS) LOGIC =================
-        // ===========================================
-        (function() {
-            const syncBtn = document.getElementById('sync-btn');
-            const syncControls = document.getElementById('sync-controls');
-            const sendBtn = document.getElementById('send-btn');
-            const receiveBtn = document.getElementById('receive-btn');
-            const receiverForm = document.getElementById('receiver-form');
-            const peerIdInput = document.getElementById('peer-id-input');
-            const connectBtn = document.getElementById('connect-btn');
-            const syncStatus = document.getElementById('sync-status');
-            
-            let peer = null;
-            let currentConn = null;
-
-            const cleanupPeer = () => {
-                if (currentConn) {
-                    currentConn.close();
-                    currentConn = null;
-                }
-                if (peer) {
-                    peer.destroy();
-                    peer = null;
-                }
-            };
-            
-            syncBtn.addEventListener('click', () => {
-                syncControls.style.display = syncControls.style.display === 'none' ? 'block' : 'none';
-            });
-            
-            sendBtn.addEventListener('click', () => {
-                cleanupPeer();
-                receiverForm.style.display = 'none';
-                const peerId = Math.floor(100000 + Math.random() * 900000).toString();
-                
-                peer = new Peer(peerId);
-
-                peer.on('open', (id) => {
-                    syncStatus.innerHTML = `کد شما: <strong style="font-size:16px; color:var(--primary-color);">${id}</strong><br>منتظر اتصال دستگاه دیگر...`;
-                });
-
-                peer.on('connection', (conn) => {
-                    currentConn = conn;
-                    syncStatus.textContent = 'دستگاه دیگر متصل شد. در حال ارسال داده...';
-                    
-                    conn.on('open', () => {
-                        const history = getHistory();
-                        conn.send(history);
-                    });
-
-                    conn.on('close', () => {
-                        syncStatus.textContent = 'اتصال بسته شد.';
-                        cleanupPeer();
-                    });
-                });
-
-                peer.on('error', (err) => {
-                    syncStatus.textContent = `خطا: ${err.message}`;
-                    showToast(`خطا در اتصال PeerJS: ${err.message}`, 'error');
-                    cleanupPeer();
-                });
-            });
-
-            receiveBtn.addEventListener('click', () => {
-                receiverForm.style.display = 'block';
-                syncStatus.textContent = 'لطفا کد را برای دریافت داده وارد کنید.';
-            });
-
-            connectBtn.addEventListener('click', () => {
-                cleanupPeer();
-                const remoteId = peerIdInput.value.trim();
-                if (!remoteId || remoteId.length !== 6) {
-                    showToast('لطفا یک کد ۶ رقمی معتبر وارد کنید.', 'error');
-                    return;
-                }
-
-                peer = new Peer();
-                
-                peer.on('open', () => {
-                    syncStatus.textContent = `در حال اتصال به ${remoteId}...`;
-                    const conn = peer.connect(remoteId);
-                    currentConn = conn;
-
-                    conn.on('open', () => {
-                        syncStatus.textContent = 'اتصال برقرار شد. منتظر دریافت داده...';
-                    });
-
-                    conn.on('data', (data) => {
-                        syncStatus.textContent = 'داده دریافت شد. در حال ادغام...';
-                        
-                        let localHistory = getHistory();
-                        let remoteHistory = data;
-                        
-                        const mergedHistory = [...localHistory];
-                        const localTexts = new Set(localHistory.map(item => item.data));
-                        
-                        remoteHistory.forEach(item => {
-                            if (!localTexts.has(item.data)) {
-                                mergedHistory.unshift(item);
-                            }
-                        });
-                        
-                        if (mergedHistory.length > 15) mergedHistory.length = 15;
-                        
-                        saveHistory(mergedHistory);
-                        renderHistory();
-                        
-                        showToast('تاریخچه با موفقیت همگام‌سازی و ادغام شد.', 'success');
-                        conn.close();
-                    });
-
-                    conn.on('close', () => {
-                        syncStatus.textContent = 'اتصال با موفقیت به پایان رسید.';
-                        cleanupPeer();
-                    });
-                });
-
-                 peer.on('error', (err) => {
-                    syncStatus.textContent = `خطا: ${err.message}`;
-                    showToast(`خطا در اتصال: ${err.message}`, 'error');
-                    cleanupPeer();
-                });
-            });
-        })();
+        // Initial calls
+        generateOrUpdateQRCode();
+        renderHistory();
     });
-
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js'); });
-    }
     </script>
 </body>
 </html>
