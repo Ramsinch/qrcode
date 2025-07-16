@@ -11,6 +11,7 @@
 
     <script type="text/javascript" src="qr-code-styling.js"></script>
     <script src="jsQR.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     
     <style>
         :root {
@@ -156,7 +157,7 @@
         .form-section { margin-top: 30px; }
         .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .option-item label { display: block; font-size: 14px; margin-bottom: 8px; color: var(--text-secondary); }
-        .option-item select {
+        .option-item select, .option-item input[type="text"] {
             width: 100%; padding: 10px; font-size: 14px; font-family: 'Vazir';
             border-radius: 8px; border: 1px solid var(--border-color);
             background-color: #fff;
@@ -228,6 +229,11 @@
         
         #reader-results { width: 100%; padding: 20px; border: 1px dashed var(--border-color); border-radius: 8px; min-height: 100px; word-wrap: break-word; }
         #decoded-data { font-size: 16px; background-color: #F9FAFB; padding: 10px; border-radius: 6px; white-space: pre-wrap; user-select: text; margin-top: 15px; }
+        
+        /* Sync Styles */
+        #sync-controls { display: none; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border-color); }
+        #sync-status { margin-top: 10px; font-size: 14px; text-align: center; }
+        #receiver-form { display: none; }
 
         /* Toast Notification */
         .toast-container { position: fixed; bottom: 20px; left: 20px; z-index: 1000; }
@@ -278,7 +284,22 @@
                 <header class="page-header"><h1>تولید کننده QR Code</h1></header>
                 <div id="generator-grid" class="content-grid">
                     <div class="card history-panel">
-                        <div class="card-header">تاریخچه</div>
+                        <div class="card-header">
+                            تاریخچه
+                            <button id="sync-btn" class="btn btn-secondary" style="float:left; padding: 5px 10px; font-size: 14px;">همگام‌سازی</button>
+                        </div>
+                        <div id="sync-controls">
+                            <div class="button-group">
+                                <button id="send-btn" class="btn btn-primary">ارسال داده</button>
+                                <button id="receive-btn" class="btn btn-secondary">دریافت داده</button>
+                            </div>
+                            <div id="receiver-form" class="option-item" style="margin-top: 15px;">
+                                <label for="peer-id-input">کد ۶ رقمی را وارد کنید:</label>
+                                <input type="text" id="peer-id-input" maxlength="6" placeholder="مثلا 123456">
+                                <button id="connect-btn" class="btn btn-primary" style="margin-top:10px; width:100%;">اتصال</button>
+                            </div>
+                            <div id="sync-status"></div>
+                        </div>
                         <div id="history-list-container">
                              <ul id="history-list"><p class="placeholder-text" id="history-placeholder">تاریخچه‌ای یافت نشد.</p></ul>
                         </div>
@@ -352,10 +373,15 @@
         const toastContainer = document.getElementById('toast-container');
         let currentView = 'generator-view';
         
-        const showToast = (message) => {
+        const showToast = (message, type = 'info') => {
             const toast = document.createElement('div');
             toast.className = 'toast';
             toast.textContent = message;
+            if (type === 'success') {
+                toast.style.backgroundColor = 'var(--success-color)';
+            } else if (type === 'error') {
+                toast.style.backgroundColor = 'var(--danger-color)';
+            }
             toastContainer.appendChild(toast);
             setTimeout(() => { toast.remove(); }, 3000);
         };
@@ -492,7 +518,7 @@
 
                     const rawData = await qrCode.getRawData('png');
                     if (!rawData) {
-                        showToast("خطا در دریافت داده‌های QR Code.");
+                        showToast("خطا در دریافت داده‌های QR Code.", 'error');
                         return;
                     }
 
@@ -542,12 +568,12 @@
 
                 } catch (err) {
                     console.error("Download failed:", err);
-                    showToast("خطا در آماده‌سازی دانلود.");
+                    showToast("خطا در آماده‌سازی دانلود.", 'error');
                 }
             };
-
-            const getHistory = () => JSON.parse(localStorage.getItem('qrHistory_v2') || '[]');
-            const saveHistory = (history) => localStorage.setItem('qrHistory_v2', JSON.stringify(history));
+            
+            window.getHistory = () => JSON.parse(localStorage.getItem('qrHistory_v2') || '[]');
+            window.saveHistory = (history) => localStorage.setItem('qrHistory_v2', JSON.stringify(history));
             
             const saveToHistory = (options) => {
                 let history = getHistory();
@@ -560,7 +586,7 @@
                 renderHistory();
             };
 
-            const renderHistory = () => {
+            window.renderHistory = () => {
                 const history = getHistory();
                 historyList.innerHTML = '';
                 if (history.length === 0) {
@@ -641,7 +667,7 @@
                                     ctx.drawImage(qrImage, padding, padding, qrSize, qrSize);
                                     ctx.fillStyle = '#7A8C99'; ctx.font = `600 ${fontSize}px Vazir`; ctx.textAlign = 'center';
                                     ctx.fillText('qrite.ir', canvas.width / 2, qrSize + padding + textHeight / 1.5);
-                                    URL.revokeObjectURL(qrImage.src); // آزاد کردن حافظه
+                                    URL.revokeObjectURL(qrImage.src); 
                                     canvas.toBlob(resolve, 'image/png');
                                 };
                                 qrImage.onerror = reject;
@@ -660,7 +686,7 @@
                             files: [file]
                         });
                     } catch (err) {
-                        if (err.name !== 'AbortError') showToast("اشتراک‌گذاری با خطا مواجه شد.");
+                        if (err.name !== 'AbortError') showToast("اشتراک‌گذاری با خطا مواجه شد.", 'error');
                     }
                 });
             }
@@ -765,6 +791,132 @@
                     img.src = event.target.result;
                 };
                 reader.readAsDataURL(file);
+            });
+        })();
+
+        // ===========================================
+        // ===== SYNC (PEERJS) LOGIC =================
+        // ===========================================
+        (function() {
+            const syncBtn = document.getElementById('sync-btn');
+            const syncControls = document.getElementById('sync-controls');
+            const sendBtn = document.getElementById('send-btn');
+            const receiveBtn = document.getElementById('receive-btn');
+            const receiverForm = document.getElementById('receiver-form');
+            const peerIdInput = document.getElementById('peer-id-input');
+            const connectBtn = document.getElementById('connect-btn');
+            const syncStatus = document.getElementById('sync-status');
+            
+            let peer = null;
+            let currentConn = null;
+
+            const cleanupPeer = () => {
+                if (currentConn) {
+                    currentConn.close();
+                    currentConn = null;
+                }
+                if (peer) {
+                    peer.destroy();
+                    peer = null;
+                }
+            };
+            
+            syncBtn.addEventListener('click', () => {
+                syncControls.style.display = syncControls.style.display === 'none' ? 'block' : 'none';
+            });
+            
+            sendBtn.addEventListener('click', () => {
+                cleanupPeer();
+                receiverForm.style.display = 'none';
+                const peerId = Math.floor(100000 + Math.random() * 900000).toString();
+                
+                peer = new Peer(peerId);
+
+                peer.on('open', (id) => {
+                    syncStatus.innerHTML = `کد شما: <strong style="font-size:16px; color:var(--primary-color);">${id}</strong><br>منتظر اتصال دستگاه دیگر...`;
+                });
+
+                peer.on('connection', (conn) => {
+                    currentConn = conn;
+                    syncStatus.textContent = 'دستگاه دیگر متصل شد. در حال ارسال داده...';
+                    
+                    conn.on('open', () => {
+                        const history = getHistory();
+                        conn.send(history);
+                    });
+
+                    conn.on('close', () => {
+                        syncStatus.textContent = 'اتصال بسته شد.';
+                        cleanupPeer();
+                    });
+                });
+
+                peer.on('error', (err) => {
+                    syncStatus.textContent = `خطا: ${err.message}`;
+                    showToast(`خطا در اتصال PeerJS: ${err.message}`, 'error');
+                    cleanupPeer();
+                });
+            });
+
+            receiveBtn.addEventListener('click', () => {
+                receiverForm.style.display = 'block';
+                syncStatus.textContent = 'لطفا کد را برای دریافت داده وارد کنید.';
+            });
+
+            connectBtn.addEventListener('click', () => {
+                cleanupPeer();
+                const remoteId = peerIdInput.value.trim();
+                if (!remoteId || remoteId.length !== 6) {
+                    showToast('لطفا یک کد ۶ رقمی معتبر وارد کنید.', 'error');
+                    return;
+                }
+
+                peer = new Peer();
+                
+                peer.on('open', () => {
+                    syncStatus.textContent = `در حال اتصال به ${remoteId}...`;
+                    const conn = peer.connect(remoteId);
+                    currentConn = conn;
+
+                    conn.on('open', () => {
+                        syncStatus.textContent = 'اتصال برقرار شد. منتظر دریافت داده...';
+                    });
+
+                    conn.on('data', (data) => {
+                        syncStatus.textContent = 'داده دریافت شد. در حال ادغام...';
+                        
+                        let localHistory = getHistory();
+                        let remoteHistory = data;
+                        
+                        const mergedHistory = [...localHistory];
+                        const localTexts = new Set(localHistory.map(item => item.data));
+                        
+                        remoteHistory.forEach(item => {
+                            if (!localTexts.has(item.data)) {
+                                mergedHistory.unshift(item);
+                            }
+                        });
+                        
+                        if (mergedHistory.length > 15) mergedHistory.length = 15;
+                        
+                        saveHistory(mergedHistory);
+                        renderHistory();
+                        
+                        showToast('تاریخچه با موفقیت همگام‌سازی و ادغام شد.', 'success');
+                        conn.close();
+                    });
+
+                    conn.on('close', () => {
+                        syncStatus.textContent = 'اتصال با موفقیت به پایان رسید.';
+                        cleanupPeer();
+                    });
+                });
+
+                 peer.on('error', (err) => {
+                    syncStatus.textContent = `خطا: ${err.message}`;
+                    showToast(`خطا در اتصال: ${err.message}`, 'error');
+                    cleanupPeer();
+                });
             });
         })();
     });
